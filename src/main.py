@@ -44,7 +44,6 @@ class GameObject:
 
 class Cube(GameObject):
     """ Куб. баг - прокрут во время падения с платформы """
-
     def __init__(self, x, y, group):
         super().__init__("C:\\Users\\Ususl\\PycharmProjects\\Dash game\\assets\\images\\main_player\\player_cube.png", x, y)
         self.velocity_y = 0
