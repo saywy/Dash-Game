@@ -18,6 +18,7 @@ FALL_STRENGTH = 3
 MAX_UPWARD_ROTATION = 20
 MAX_DOWNWARD_ROTATION = -20
 ROTATION_FALL_SPEED = 2
+PROJECT_PATH = str(os.path.dirname(__file__))[:-3]
 
 
 def load_image(name, colorkey=None):
@@ -45,7 +46,7 @@ class GameObject:
 class Cube(GameObject):
     """ Куб. баг - прокрут во время падения с платформы """
     def __init__(self, x, y, group):
-        super().__init__("C:\\Users\\Ususl\\PycharmProjects\\Dash game\\assets\\images\\main_player\\player_cube.png", x, y)
+        super().__init__(f"{PROJECT_PATH}\\assets\\images\\main_player\\player_cube.png", x, y)
         self.velocity_y = 0
         self.is_jumping = False
         self.rotation_angle = 0
@@ -56,7 +57,8 @@ class Cube(GameObject):
             self.velocity_y = -JUMP_STRENGTH
             self.is_jumping = True
 
-    def return_to_menu(self):
+    @staticmethod
+    def return_to_menu():
         return True
 
     def correct_rotation_angle(self):
@@ -92,7 +94,7 @@ class Cube(GameObject):
 
     def update_image(self):
         self.image = pygame.transform.rotate(
-            pygame.image.load("C:\\Users\\Ususl\\PycharmProjects\\Dash game\\assets\\images\\main_player\\player_cube.png"),
+            pygame.image.load(f"{PROJECT_PATH}\\assets\\images\\main_player\\player_cube.png"),
             -self.rotation_angle
         )
         self.rect = self.image.get_rect(center=self.rect.center)
@@ -105,8 +107,6 @@ class Cube(GameObject):
             self.rect.y = HEIGHT - self.rect.height
             self.velocity_y = 0
             self.is_jumping = False
-            self.rotation_angle = 0
-
         collision_happened = self.is_falling()
 
         if self.is_jumping and not collision_happened:
@@ -121,7 +121,7 @@ class Surface(GameObject):
     """ Платформа. баг - отображение нижней платформы (чуть выше чем нужно), может быть изменено при необходимости  """
 
     def __init__(self, x, y):
-        super().__init__("C:\\Users\\Ususl\\PycharmProjects\\Dash game\\assets\\images\\cub.png", x, y)
+        super().__init__(f'{PROJECT_PATH}\\assets\\images\\cub.png', x, y)
         self.is_drawn = False
 
     @staticmethod
@@ -144,7 +144,7 @@ class Wave(GameObject):
     """
 
     def __init__(self, x, y):
-        super().__init__("C:\\Users\\Ususl\\PycharmProjects\\Dash game\\assets\\images\\main_player\\wave\\wave_straight.png", x, y) # без наклона
+        super().__init__(f"{PROJECT_PATH}assets\\images\\main_player\\wave\\wave_straight.png", x, y) # без наклона
         self.velocity_y = 0
         self.is_moving_up = False
 
@@ -158,12 +158,12 @@ class Wave(GameObject):
             self.velocity_y = 5 if self.rect.bottom < HEIGHT else 0
 
         if self.is_moving_up:
-            self.image = pygame.image.load("C:\\Users\\Ususl\\PycharmProjects\\Dash game\\assets\\images\\main_player\\wave\\wave_up.png") # наклон вверх
+            self.image = pygame.image.load(f"{PROJECT_PATH}\\assets\\images\\main_player\\wave\\wave_up.png") # наклон вверх
         else:
             if self.rect.bottom >= HEIGHT:
-                self.image = pygame.image.load("C:\\Users\\Ususl\\PycharmProjects\\Dash game\\assets\\images\\main_player\\wave\\wave_straight.png") # без наклона
+                self.image = pygame.image.load(f"{PROJECT_PATH}\\assets\\images\\main_player\\wave\\wave_straight.png") # без наклона
             else:
-                self.image = pygame.image.load("C:\\Users\\Ususl\\PycharmProjects\\Dash game\\assets\\images\\main_player\\wave\\wave_down.png") # наклон вниз
+                self.image = pygame.image.load(f"{PROJECT_PATH}\\assets\\images\\main_player\\wave\\wave_down.png") # наклон вниз
 
         self.rect = self.image.get_rect(center=self.rect.center)
 
@@ -175,7 +175,7 @@ class Ship(GameObject):
     """
 
     def __init__(self, x, y):
-        super().__init__("C:\\Users\\Ususl\\PycharmProjects\\Dash game\\assets\\images\\main_player\\player_ship.png", x, y)
+        super().__init__(f"{PROJECT_PATH}\\assets\\images\\main_player\\player_ship.png", x, y)
         self.initial_x = x
         self.initial_y = y
         self.speed_up = 3
@@ -217,7 +217,7 @@ class MainMenu:
     """
 
     def __init__(self):
-        self.play_button = load_image("C:\\Users\\Ususl\\PycharmProjects\\Dash game\\assets\\images\\button_play.png")
+        self.play_button = load_image(rf'{PROJECT_PATH}\assets\images\button_play.png')
 
     def draw(self):
         screen.fill(BLACK)
@@ -257,7 +257,7 @@ def main_menu_loop(menu, cube, clock):
                 if button_rect.collidepoint(event.pos):
                     return True
         cube.reset_position()
-        cube.group = load_level("C:\\Users\\Ususl\\PycharmProjects\\Dash game\\levels\\lvl1.txt")
+        cube.group = load_level(f"{PROJECT_PATH}\\assets\\levels\\lvl1.txt")
         menu.draw()
         clock.tick(60)
 
@@ -297,7 +297,7 @@ def main():
         else:
             if main_menu_loop(menu, cube, clock):
                 in_game = True
-                cube.group = load_level("C:\\Users\\Ususl\\PycharmProjects\\Dash game\\levels\\lvl1.txt")
+                cube.group = load_level(f"{PROJECT_PATH}\\assets\\levels\\lvl1.txt")
 
         pygame.display.flip()
         clock.tick(60)
