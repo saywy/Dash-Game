@@ -51,6 +51,8 @@ class Cube(GameObject):
         self.is_jumping = False
         self.rotation_angle = 0
         self.group = group
+        self.last_bottom = self.rect.bottom
+        self.last_surface_top = HEIGHT
 
     def jump(self):
         if not self.is_jumping:
@@ -61,36 +63,30 @@ class Cube(GameObject):
     def return_to_menu():
         return True
 
-    def correct_rotation_angle(self):
-        if self.rotation_angle < 0:
-            self.rotation_angle += 360
-        closest_angle = round(self.rotation_angle / 90) * 90
-        self.rotation_angle = closest_angle
-
     def is_falling(self):
         self.rect.y += self.velocity_y
         for surface in self.group:
-            if self.rect.colliderect(surface.rect):
+            if self.rect.colliderect(surface.rect) or self.rect.bottom == surface.rect.top:
                 if surface.is_dangerous():
-                    self.kill()
+                    return 'BAD'
+                elif self.rect.bottom - surface.rect.top > 10:
+                    return 'BAD'
                 if self.velocity_y > 0:
                     self.rect.bottom = surface.rect.top
                     self.is_jumping = False
                     self.velocity_y = 0
-                    self.correct_rotation_angle()
+                    self.last_surface_top = surface.rect.top
                     return True
-                elif self.rect.bottom < surface.rect.top:
-                    return self.return_to_menu()
-                if self.rect.right > surface.rect.left and self.rect.left < surface.rect.right:
-                    return self.return_to_menu()
+        self.last_surface_top = HEIGHT + 100
+
+
 
     def reset_position(self):
         self.rect.x = 100
-        self.rect.y = HEIGHT - 100
+        self.rect.bottom = self.last_bottom = HEIGHT
         self.velocity_y = 0
         self.is_jumping = False
         self.rotation_angle = 0
-        return False
 
     def update_image(self):
         self.image = pygame.transform.rotate(
@@ -107,12 +103,20 @@ class Cube(GameObject):
             self.rect.y = HEIGHT - self.rect.height
             self.velocity_y = 0
             self.is_jumping = False
-        collision_happened = self.is_falling()
+        self.is_falling()
 
-        if self.is_jumping and not collision_happened:
+        if abs(self.rect.bottom - self.last_bottom) < 5 or abs(HEIGHT - self.rect.bottom) < 5:
+            by_module_90 = self.rotation_angle % 90
+            if by_module_90 >= 45:
+                self.rotation_angle += ROTATION_SPEED
+            elif ROTATION_SPEED <= by_module_90 < 45:
+                self.rotation_angle -= ROTATION_SPEED
+            elif by_module_90 < ROTATION_SPEED:
+                self.rotation_angle = self.rotation_angle // 90 * 90
+        else:
             self.rotation_angle += ROTATION_SPEED
-            if self.velocity_y > 0:
-                self.rotation_angle += ROTATION_FALL_SPEED
+            self.rotation_angle %= 360
+            self.last_bottom = self.rect.bottom
 
         self.update_image()
 
@@ -289,11 +293,9 @@ def main():
             if all(surface.is_drawn for surface in cube.group):
                 in_game = False
 
-            if cube.is_falling():
-                return_value = cube.is_falling()
-                if return_value:
-                    cube.reset_position()
-                    in_game = False
+            if cube.is_falling() == 'BAD':
+                cube.reset_position()
+                in_game = False
         else:
             if main_menu_loop(menu, cube, clock):
                 in_game = True
