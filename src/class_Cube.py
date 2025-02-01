@@ -3,14 +3,13 @@ from constants import (HEIGHT, JUMP_STRENGTH, PROJECT_PATH, ROTATION_SPEED, GRAV
 
 
 class Cube(GameObject):
-    """ Куб. баг - прокрут во время падения с платформы """
-
-    def __init__(self, x, y, group):
-        super().__init__(f"{PROJECT_PATH}\\assets\\images\\main_player\\player_cube.png", x, y)
+    """  Баг - возможен двойной прыжок"""
+    def __init__(self, x, y, surface_group, object_group):
+        super().__init__(f"{PROJECT_PATH}\\assets\\images\\main_player\\player_cube.png", x, y, object_group)
         self.velocity_y = 0
         self.is_jumping = False
         self.rotation_angle = 0
-        self.group = group
+        self.surface_group = surface_group
         self.last_bottom = self.rect.bottom
         self.last_surface_top = HEIGHT
 
@@ -25,7 +24,7 @@ class Cube(GameObject):
 
     def is_falling(self):
         self.rect.y += self.velocity_y
-        for surface in self.group:
+        for surface in self.surface_group:
             if self.rect.colliderect(surface.rect) or self.rect.bottom == surface.rect.top:
                 if surface.is_dangerous():
                     return 'BAD'

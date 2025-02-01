@@ -16,10 +16,11 @@ ROTATION_FALL_SPEED = 2
 PROJECT_PATH = str(os.path.dirname(__file__))[:-3]
 
 
-class GameObject:
+class GameObject(pygame.sprite.Sprite):
     """ Родительский класс для всех видов игры """
 
-    def __init__(self, image_path, x, y):
+    def __init__(self, image_path, x, y, group):
+        super().__init__(group)
         self.image = pygame.image.load(image_path)
         self.rect = self.image.get_rect(topleft=(x, y))
 
