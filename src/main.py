@@ -1,24 +1,16 @@
 import pygame
 import os
 import sys
+from class_Cube import Cube
+from class_Ship import Ship
+from class_Wave import Wave
+from class_Surface import Surface
+from constants import (WIDTH, HEIGHT, PROJECT_PATH, BLACK, WHITE)
 
 pygame.init()
 
-WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("GashGame")
-
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-GRAVITY = 0.5
-JUMP_STRENGTH = 8.5
-ROTATION_SPEED = 5
-OBSTACLE_SPEED = 2
-FALL_STRENGTH = 3
-MAX_UPWARD_ROTATION = 20
-MAX_DOWNWARD_ROTATION = -20
-ROTATION_FALL_SPEED = 2
-PROJECT_PATH = str(os.path.dirname(__file__))[:-3]
 
 
 def load_image(name, colorkey=None):
@@ -30,187 +22,6 @@ def load_image(name, colorkey=None):
     if colorkey:
         img.set_colorkey(colorkey)
     return img
-
-
-class GameObject:
-    """ Родительский класс для всех видов игры """
-
-    def __init__(self, image_path, x, y):
-        self.image = pygame.image.load(image_path)
-        self.rect = self.image.get_rect(topleft=(x, y))
-
-    def draw(self, surface):
-        surface.blit(self.image, self.rect.topleft)
-
-
-class Cube(GameObject):
-    """ Куб. баг - прокрут во время падения с платформы """
-    def __init__(self, x, y, group):
-        super().__init__(f"{PROJECT_PATH}\\assets\\images\\main_player\\player_cube.png", x, y)
-        self.velocity_y = 0
-        self.is_jumping = False
-        self.rotation_angle = 0
-        self.group = group
-        self.last_bottom = self.rect.bottom
-        self.last_surface_top = HEIGHT
-
-    def jump(self):
-        if not self.is_jumping:
-            self.velocity_y = -JUMP_STRENGTH
-            self.is_jumping = True
-
-    @staticmethod
-    def return_to_menu():
-        return True
-
-    def is_falling(self):
-        self.rect.y += self.velocity_y
-        for surface in self.group:
-            if self.rect.colliderect(surface.rect) or self.rect.bottom == surface.rect.top:
-                if surface.is_dangerous():
-                    return 'BAD'
-                elif self.rect.bottom - surface.rect.top > 10:
-                    return 'BAD'
-                if self.velocity_y > 0:
-                    self.rect.bottom = surface.rect.top
-                    self.is_jumping = False
-                    self.velocity_y = 0
-                    self.last_surface_top = surface.rect.top
-                    return True
-        self.last_surface_top = HEIGHT + 100
-
-
-
-    def reset_position(self):
-        self.rect.x = 100
-        self.rect.bottom = self.last_bottom = HEIGHT
-        self.velocity_y = 0
-        self.is_jumping = False
-        self.rotation_angle = 0
-
-    def update_image(self):
-        self.image = pygame.transform.rotate(
-            pygame.image.load(f"{PROJECT_PATH}\\assets\\images\\main_player\\player_cube.png"),
-            -self.rotation_angle
-        )
-        self.rect = self.image.get_rect(center=self.rect.center)
-
-    def update(self):
-        self.velocity_y += GRAVITY
-        self.rect.y += self.velocity_y
-
-        if self.rect.y >= HEIGHT - self.rect.height:
-            self.rect.y = HEIGHT - self.rect.height
-            self.velocity_y = 0
-            self.is_jumping = False
-        self.is_falling()
-
-        if abs(self.rect.bottom - self.last_bottom) < 5 or abs(HEIGHT - self.rect.bottom) < 5:
-            by_module_90 = self.rotation_angle % 90
-            if by_module_90 >= 45:
-                self.rotation_angle += ROTATION_SPEED
-            elif ROTATION_SPEED <= by_module_90 < 45:
-                self.rotation_angle -= ROTATION_SPEED
-            elif by_module_90 < ROTATION_SPEED:
-                self.rotation_angle = self.rotation_angle // 90 * 90
-        else:
-            self.rotation_angle += ROTATION_SPEED
-            self.rotation_angle %= 360
-            self.last_bottom = self.rect.bottom
-
-        self.update_image()
-
-
-class Surface(GameObject):
-    """ Платформа. баг - отображение нижней платформы (чуть выше чем нужно), может быть изменено при необходимости  """
-
-    def __init__(self, x, y):
-        super().__init__(f'{PROJECT_PATH}\\assets\\images\\cub.png', x, y)
-        self.is_drawn = False
-
-    @staticmethod
-    def is_dangerous():
-        return False
-
-    def update(self):
-        if not self.is_drawn:
-            self.rect.x -= OBSTACLE_SPEED
-        if self.rect.x < -self.rect.width:
-            self.is_drawn = True
-
-
-class Wave(GameObject):
-    """
-    Волна (стрелочка). Баг - нет адекватной работы линии - траектории движения
-    Сейчас переключается между 3-мя изображениями (с наклоном вверх / вниз / без наклона)
-    Есть некая физика. При достижении верхней границы и зажатого пробела, отображение меняется на картинку без наклона
-    Нужно поправить двойную подгрузку изображения без наклона
-    """
-
-    def __init__(self, x, y):
-        super().__init__(f"{PROJECT_PATH}assets\\images\\main_player\\wave\\wave_straight.png", x, y) # без наклона
-        self.velocity_y = 0
-        self.is_moving_up = False
-
-    def update(self):
-        keys = pygame.key.get_pressed()
-        self.is_moving_up = keys[pygame.K_SPACE]
-
-        if self.is_moving_up:
-            self.velocity_y = -5 if self.rect.top > 0 else 0
-        else:
-            self.velocity_y = 5 if self.rect.bottom < HEIGHT else 0
-
-        if self.is_moving_up:
-            self.image = pygame.image.load(f"{PROJECT_PATH}\\assets\\images\\main_player\\wave\\wave_up.png") # наклон вверх
-        else:
-            if self.rect.bottom >= HEIGHT:
-                self.image = pygame.image.load(f"{PROJECT_PATH}\\assets\\images\\main_player\\wave\\wave_straight.png") # без наклона
-            else:
-                self.image = pygame.image.load(f"{PROJECT_PATH}\\assets\\images\\main_player\\wave\\wave_down.png") # наклон вниз
-
-        self.rect = self.image.get_rect(center=self.rect.center)
-
-
-class Ship(GameObject):
-    """
-    Корабль (лодка).
-    Грамотно прописана система лавирования (верх / низ), но по возможности можно сделать ее плавнее.
-    """
-
-    def __init__(self, x, y):
-        super().__init__(f"{PROJECT_PATH}\\assets\\images\\main_player\\player_ship.png", x, y)
-        self.initial_x = x
-        self.initial_y = y
-        self.speed_up = 3
-        self.speed_down = FALL_STRENGTH
-        self.is_moving_up = False
-        self.current_angle = 0
-        self.target_angle = 0
-        self.velocity_y = 0
-        self.original_image = self.image
-
-    def reset_position(self):
-        self.rect.x = self.initial_x
-        self.rect.y = self.initial_y
-        self.current_angle = 0
-
-    def update(self):
-        keys = pygame.key.get_pressed()
-        self.is_moving_up = keys[pygame.K_SPACE]
-
-        if self.is_moving_up:
-            self.target_angle = min(self.current_angle + ROTATION_SPEED, MAX_UPWARD_ROTATION)
-            self.velocity_y = -self.speed_up
-        else:
-            self.target_angle = max(self.current_angle - ROTATION_SPEED, MAX_DOWNWARD_ROTATION)
-            self.velocity_y = self.speed_down
-
-        self.rect.y += self.velocity_y
-        self.rect.y = max(0, min(self.rect.y, HEIGHT - self.rect.height))
-        self.current_angle = self.target_angle
-        self.image = pygame.transform.rotate(self.original_image, self.current_angle)
-        self.rect = self.image.get_rect(center=self.rect.center)
 
 
 class MainMenu:
