@@ -1,17 +1,19 @@
 import pygame
 from constants import (HEIGHT, JUMP_STRENGTH, PROJECT_PATH, ROTATION_SPEED, GRAVITY, GameObject)
 
+SKIN = f"{PROJECT_PATH}\\assets\\images\\main_player\\player_cube.png"
 
 class Cube(GameObject):
     """  Баг - возможен двойной прыжок"""
-    def __init__(self, x, y, surface_group, object_group):
-        super().__init__(f"{PROJECT_PATH}\\assets\\images\\main_player\\player_cube.png", x, y, object_group)
+    def __init__(self, x, y, surface_group, object_group, skin):
+        super().__init__(skin, x, y, object_group)
         self.velocity_y = 0
         self.is_jumping = False
         self.rotation_angle = 0
         self.surface_group = surface_group
         self.last_bottom = self.rect.bottom
         self.last_surface_top = HEIGHT
+        self.skin = skin
 
     def jump(self):
         if not self.is_jumping:
@@ -28,7 +30,7 @@ class Cube(GameObject):
             if self.rect.colliderect(surface.rect) or self.rect.bottom == surface.rect.top:
                 if surface.is_dangerous():
                     return 'BAD'
-                elif self.rect.bottom - surface.rect.top > 10:
+                elif self.rect.bottom - surface.rect.top > 20:
                     return 'BAD'
                 if self.velocity_y > 0:
                     self.rect.bottom = surface.rect.top
@@ -47,7 +49,7 @@ class Cube(GameObject):
 
     def update_image(self):
         self.image = pygame.transform.rotate(
-            pygame.image.load(f"{PROJECT_PATH}\\assets\\images\\main_player\\player_cube.png"),
+            pygame.image.load(self.skin),
             -self.rotation_angle
         )
         self.rect = self.image.get_rect(center=self.rect.center)

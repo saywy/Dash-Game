@@ -4,8 +4,10 @@ import sys
 from class_Cube import Cube
 from class_Ship import Ship
 from class_Wave import Wave
+from class_Player import Player
+from class_SpeedPortal import SpeedPortal
 from class_Surface import Surface
-from constants import (WIDTH, HEIGHT, PROJECT_PATH, BLACK, WHITE)
+from constants import (WIDTH, HEIGHT, PROJECT_PATH, BLACK, WHITE, load_image, OBSTACLE_SPEED)
 
 pygame.init()
 
@@ -13,17 +15,8 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("GashGame")
 surface_group = pygame.sprite.Group()
 object_group = pygame.sprite.Group()
+speed_portal_group = pygame.sprite.Group()
 
-
-def load_image(name, colorkey=None):
-    fullname = os.path.join(name)
-    if not os.path.isfile(fullname):
-        print(f"File '{fullname}' not found")
-        sys.exit()
-    img = pygame.image.load(fullname)
-    if colorkey:
-        img.set_colorkey(colorkey)
-    return img
 
 
 class MainMenu:
@@ -51,6 +44,8 @@ def load_level(filename):
     sixth_line_y = 595
     for surface in surface_group:
         surface_group.remove(surface)
+    for portal in speed_portal_group:
+        speed_portal_group.remove(portal)
 
     with open(filename, 'r') as file:
         lines = file.readlines()
@@ -58,7 +53,22 @@ def load_level(filename):
             for x, char in enumerate(line.strip()):
                 if char == '-':
                     surface_y = sixth_line_y if y == 5 else sixth_line_y - (5 - y) * line_height
-                    Surface(x * line_height, surface_y, surface_group)
+                    Surface(x * line_height, surface_y, surface_group, OBSTACLE_SPEED)
+                elif char == '0':
+                    surface_y = sixth_line_y - line_height if y == 5 else sixth_line_y - (5 - y) * line_height * 4
+                    SpeedPortal(-1, x * line_height, surface_y, speed_portal_group, OBSTACLE_SPEED)
+                elif char == '1':
+                    surface_y = sixth_line_y - line_height if y == 5 else sixth_line_y - (5 - y) * line_height * 2
+                    SpeedPortal(1, x * line_height, surface_y, speed_portal_group, OBSTACLE_SPEED)
+                elif char == '2':
+                    surface_y = sixth_line_y - line_height if y == 5 else sixth_line_y - (5 - y) * line_height * 1.5
+                    SpeedPortal(2, x * line_height, surface_y, speed_portal_group, OBSTACLE_SPEED)
+                elif char == '3':
+                    surface_y = sixth_line_y - line_height if y == 5 else sixth_line_y - (5 - y) * line_height * 1.75
+                    SpeedPortal(3, x * line_height, surface_y, speed_portal_group, OBSTACLE_SPEED)
+                elif char == '4':
+                    surface_y = sixth_line_y - line_height if y == 5 else sixth_line_y - (5 - y) * line_height * 2
+                    SpeedPortal(4, x * line_height, surface_y, speed_portal_group, OBSTACLE_SPEED)
 
 
 def main_menu_loop(menu, game_object, clock):
@@ -82,7 +92,7 @@ def main():
 
     clock = pygame.time.Clock()
     menu = MainMenu()
-    game_object = Cube(100, HEIGHT - 100, surface_group, object_group)
+    game_object = Player(Cube, surface_group, object_group, f"{PROJECT_PATH}\\assets\\images\\main_player\\player_cube.png", 100, HEIGHT - 100)
     running = True
     in_game = False
 
@@ -91,12 +101,20 @@ def main():
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                    game_object.jump()
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and isinstance(game_object.mode, Cube):
+                    game_object.mode.jump()
             screen.fill(WHITE)
             for surface in surface_group:
                 surface.update()
                 surface.draw(screen)
+            for portal in speed_portal_group:
+                portal.update()
+                portal.draw(screen)
+            if speed := game_object.colide_with_speed_portal(speed_portal_group):
+                for surface in surface_group:
+                    surface.change_obstacle_speed(speed)
+                for portal in speed_portal_group:
+                    portal.change_obstacle_speed(speed)
 
             game_object.update()
             object_group.draw(screen)
@@ -104,16 +122,15 @@ def main():
             if all(surface.is_drawn for surface in game_object.surface_group):
                 in_game = False
 
-            if game_object.is_falling() == 'BAD':
-                game_object.reset_position()
-                game_object.rect.x = 0
+            if isinstance(game_object.mode, Cube) and game_object.mode.is_falling() == 'BAD':
+                game_object.mode.reset_position()
                 in_game = False
         else:
-            if main_menu_loop(menu, game_object, clock):
+            if main_menu_loop(menu, game_object.mode, clock):
                 in_game = True
                 load_level(f"{PROJECT_PATH}\\assets\\levels\\lvl1.txt")
                 game_object.surface_group = surface_group
-                game_object.reset_position()
+                game_object.mode.reset_position()
 
         pygame.display.flip()
         clock.tick(60)

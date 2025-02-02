@@ -10,10 +10,12 @@ class Wave(GameObject):
     Нужно поправить двойную подгрузку изображения без наклона
     """
 
-    def __init__(self, x, y, object_group):
+    def __init__(self, x, y, surface_group, object_group):
         super().__init__(f"{PROJECT_PATH}assets\\images\\main_player\\wave\\wave_straight.png", x, y, object_group)  # без наклона
         self.velocity_y = 0
         self.is_moving_up = False
+        self.surface_group = surface_group
+        self.object_group = object_group
 
     def update(self):
         keys = pygame.key.get_pressed()

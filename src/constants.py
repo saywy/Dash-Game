@@ -1,4 +1,5 @@
 import os
+import sys
 import pygame
 
 
@@ -8,7 +9,7 @@ BLACK = (0, 0, 0)
 GRAVITY = 0.5
 JUMP_STRENGTH = 8.5
 ROTATION_SPEED = 5
-OBSTACLE_SPEED = 2
+OBSTACLE_SPEED = 6
 FALL_STRENGTH = 3
 MAX_UPWARD_ROTATION = 20
 MAX_DOWNWARD_ROTATION = -20
@@ -26,3 +27,14 @@ class GameObject(pygame.sprite.Sprite):
 
     def draw(self, surface):
         surface.blit(self.image, self.rect.topleft)
+
+
+def load_image(name, colorkey=None):
+    fullname = os.path.join(name)
+    if not os.path.isfile(fullname):
+        print(f"File '{fullname}' not found")
+        sys.exit()
+    img = pygame.image.load(fullname)
+    if colorkey:
+        img.set_colorkey(colorkey)
+    return img
