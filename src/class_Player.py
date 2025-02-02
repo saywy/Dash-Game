@@ -2,12 +2,12 @@ from class_SpeedPortal import SpeedPortal
 
 
 class Player:
-    def __init__(self, mode, surface_group, object_group, skin,  x, y):
-        self.mode = mode(x, y, surface_group, object_group, skin)
+    def __init__(self, mode, surface_group, object_group, skin,  x, y, obstacle_speed):
+        self.mode = mode(x, y, surface_group, object_group, skin, obstacle_speed)
 
-    def change_mode(self, mod, surface_group, object_group, skin,  x, y):
+    def change_mode(self, mod, surface_group, object_group, skin,  x, y, obstacle_speed):
         del self.mode
-        self.mode = mod(x, y, surface_group, object_group, skin)
+        self.mode = mod(x, y, surface_group, object_group, skin, obstacle_speed)
 
     def update(self):
         self.mode.update()

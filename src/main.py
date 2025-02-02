@@ -7,7 +7,7 @@ from class_Wave import Wave
 from class_Player import Player
 from class_SpeedPortal import SpeedPortal
 from class_Surface import Surface
-from constants import (WIDTH, HEIGHT, PROJECT_PATH, BLACK, WHITE, load_image, OBSTACLE_SPEED)
+from constants import (WIDTH, HEIGHT, PROJECT_PATH, BLACK, WHITE, load_image, OBSTACLE_SPEED, TRACE_COLOR)
 
 pygame.init()
 
@@ -16,6 +16,7 @@ pygame.display.set_caption("GashGame")
 surface_group = pygame.sprite.Group()
 object_group = pygame.sprite.Group()
 speed_portal_group = pygame.sprite.Group()
+circles = [] # След волны рисуется отдельно
 
 
 
@@ -92,9 +93,10 @@ def main():
 
     clock = pygame.time.Clock()
     menu = MainMenu()
-    game_object = Player(Cube, surface_group, object_group, f"{PROJECT_PATH}\\assets\\images\\main_player\\player_cube.png", 100, HEIGHT - 100)
+    game_object = Player(Wave, surface_group, object_group, f"{PROJECT_PATH}assets\\images\\main_player\\wave\\wave_straight.png", 100, HEIGHT - 100, OBSTACLE_SPEED)
     running = True
     in_game = False
+    obstacle_speed = OBSTACLE_SPEED
 
     while running:
         if in_game:
@@ -115,15 +117,32 @@ def main():
                     surface.change_obstacle_speed(speed)
                 for portal in speed_portal_group:
                     portal.change_obstacle_speed(speed)
+                obstacle_speed = speed
+                game_object.mode.obstacle_speed = speed
 
+            for circle in circles:
+                circle[2][0] -= obstacle_speed
+                pygame.draw.circle(circle[0], circle[1], circle[2], circle[3])
             game_object.update()
             object_group.draw(screen)
+
+            # След волны
+            if isinstance(game_object.mode, Wave):
+                rect = game_object.mode.rect
+                x = rect.x
+                y = rect.y
+                right = rect.right
+                bottom = rect.bottom
+                center = [x + (right - x) / 2, y + (bottom - y) / 2]
+                circles.append([screen, TRACE_COLOR, center, 10])
 
             if all(surface.is_drawn for surface in game_object.surface_group):
                 in_game = False
 
             if isinstance(game_object.mode, Cube) and game_object.mode.is_falling() == 'BAD':
                 game_object.mode.reset_position()
+                in_game = False
+            elif isinstance(game_object.mode, Wave) and game_object.mode.in_game is False:
                 in_game = False
         else:
             if main_menu_loop(menu, game_object.mode, clock):

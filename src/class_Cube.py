@@ -5,7 +5,7 @@ SKIN = f"{PROJECT_PATH}\\assets\\images\\main_player\\player_cube.png"
 
 class Cube(GameObject):
     """  Баг - возможен двойной прыжок"""
-    def __init__(self, x, y, surface_group, object_group, skin):
+    def __init__(self, x, y, surface_group, object_group, skin, obstacle_speed):
         super().__init__(skin, x, y, object_group)
         self.velocity_y = 0
         self.is_jumping = False
@@ -14,6 +14,7 @@ class Cube(GameObject):
         self.last_bottom = self.rect.bottom
         self.last_surface_top = HEIGHT
         self.skin = skin
+        self.obstacle_speed = obstacle_speed
 
     def jump(self):
         if not self.is_jumping:

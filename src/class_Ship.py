@@ -9,7 +9,7 @@ class Ship(GameObject):
     Грамотно прописана система лавирования (верх / низ), но по возможности можно сделать ее плавнее.
     """
 
-    def __init__(self, x, y, surface_group, object_group):
+    def __init__(self, x, y, surface_group, object_group, obstacle_speed):
         super().__init__(f"{PROJECT_PATH}\\assets\\images\\main_player\\player_ship.png", x, y, object_group)
         self.initial_x = x
         self.initial_y = y
@@ -21,6 +21,7 @@ class Ship(GameObject):
         self.velocity_y = 0
         self.original_image = self.image
         self.surface_group = surface_group
+        self.obstacle_speed = obstacle_speed
 
     def reset_position(self):
         self.rect.x = self.initial_x
