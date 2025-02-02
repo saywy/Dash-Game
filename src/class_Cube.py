@@ -28,7 +28,7 @@ class Cube(GameObject):
     def is_falling(self):
         self.rect.y += self.velocity_y
         for surface in self.surface_group:
-            if self.rect.colliderect(surface.rect) or self.rect.bottom == surface.rect.top:
+            if self.rect.colliderect(surface.rect):
                 if surface.is_dangerous():
                     return 'BAD'
                 elif self.rect.bottom - surface.rect.top > 20:

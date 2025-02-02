@@ -1,5 +1,6 @@
 import pygame
 from constants import (PROJECT_PATH, HEIGHT, GameObject)
+SKIN = f"{PROJECT_PATH}assets\\images\\main_player\\wave\\wave_straight.png"
 
 
 class Wave(GameObject):

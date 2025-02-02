@@ -93,7 +93,7 @@ def main():
 
     clock = pygame.time.Clock()
     menu = MainMenu()
-    game_object = Player(Wave, surface_group, object_group, f"{PROJECT_PATH}assets\\images\\main_player\\wave\\wave_straight.png", 100, HEIGHT - 100, OBSTACLE_SPEED)
+    game_object = Player(Ship, surface_group, object_group, f"{PROJECT_PATH}\\assets\\images\\main_player\\player_cube.png", 100, HEIGHT - 100, OBSTACLE_SPEED)
     running = True
     in_game = False
     obstacle_speed = OBSTACLE_SPEED
