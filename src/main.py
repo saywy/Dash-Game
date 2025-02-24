@@ -16,8 +16,7 @@ pygame.display.set_caption("GashGame")
 surface_group = pygame.sprite.Group()
 object_group = pygame.sprite.Group()
 speed_portal_group = pygame.sprite.Group()
-circles = [] # След волны рисуется отдельно
-
+circles = []  # След волны рисуется отдельно
 
 
 class MainMenu:
@@ -88,12 +87,19 @@ def main_menu_loop(menu, game_object, clock):
         clock.tick(60)
 
 
+def quit_game():
+    pygame.quit()
+    sys.exit()
+
+
 def main():
     """ Основная функция игры   """
 
     clock = pygame.time.Clock()
     menu = MainMenu()
-    game_object = Player(Ship, surface_group, object_group, f"{PROJECT_PATH}\\assets\\images\\main_player\\player_cube.png", 100, HEIGHT - 100, OBSTACLE_SPEED)
+    game_object = Player(Cube, surface_group, object_group,
+                         f"{PROJECT_PATH}\\assets\\images\\main_player\\player_cube.png", 100, HEIGHT - 100,
+                         OBSTACLE_SPEED)
     running = True
     in_game = False
     obstacle_speed = OBSTACLE_SPEED
@@ -101,8 +107,8 @@ def main():
     while running:
         if in_game:
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
+                if event.type == pygame.QUIT or event.type == pygame.KEYUP and event.key == pygame.K_ESCAPE:
+                    quit_game()
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and isinstance(game_object.mode, Cube):
                     game_object.mode.jump()
             screen.fill(WHITE)
