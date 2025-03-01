@@ -1,6 +1,0 @@
-Cube --> Wave - обозначение: portCW, file_name - portCW
-Cube --> Ship - обозначение: portCS, file_name - portCS
-Wave --> Ship - обозначение: portWS, file_name - portWS
-Wave --> Cube - обозначение: portWC, file_name - portWC
-Ship --> Wave - обозначение: portSW, file_name - portSW
-Ship --> Cube - обозначение: portSC, file_name - portSC
